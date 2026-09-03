@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>東二共生居 - 房客專屬 Hub</title>
+    <style>
+        :root {
+            --primary-color: #d4a373; 
+            --secondary-color: #faedcd;
+            --text-color: #333;
+            --bg-color: #fefae0;
+            --card-bg: #ffffff;
+            --cancel-color: #999999;
+            --admin-color: #b05753;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'LiHei Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 500px; 
+            min-height: 100vh;
+            background: var(--bg-color);
+            position: relative;
+        }
+
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #login-step-1, #login-step-2 {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #login-screen h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid var(--secondary-color);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        button.joined-btn {
+            background-color: var(--cancel-color);
+        }
+
+        button.admin-btn {
+            background-color: var(--admin-color);
+        }
+
+        #main-app {
+            display: none;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .header .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .header button {
+            width: auto;
+            padding: 5px 10px;
+            font-size: 11px;
+            background: var(--cancel-color);
+        }
+
+        .header button.admin-tag {
+            background: var(--admin-color);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+        }
+
+        .card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .joined-list {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            width: auto;
+            flex: 1;
+        }
+
+        .edit-btn {
+            background-color: #6c757d;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- 1. 登入區 -->
+    <div id="login-screen">
+        <div id="login-step-1">
+            <h1>東二共生居</h1>
+            <p>歡迎回家！請輸入暱稱，或輸入管理員密碼解鎖後台</p>
+            <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼 (admin123)">
+            <button onclick="checkNickname()">進入平台</button>
+        </div>
+        
+        <div id="login-step-2" style="display: none;">
+            <h1>身分確認</h1>
+            <p>發現已經有人使用「<strong id="conflict-name"></strong>」這個暱稱囉！</p>
+            <button onclick="proceedLogin()">是我本人，繼續進入</button>
+            <button class="joined-btn" style="margin-top: 10px;" onclick="backToRename()">我是別人，換個暱稱</button>
+        </div>
+    </div>
+
+    <!-- 2. 主畫面 -->
+    <div id="main-app">
+        <div class="header">
+            <div>嗨，<strong id="user-display"></strong> <span id="admin-badge" style="display:none; color:var(--admin-color); font-size:12px; font-weight:bold;">[管理員]</span></div>
+            <div class="btn-group">
+                <button id="admin-post-btn" class="admin-tag" style="display:none;" onclick="showAdminPostModal()">發布官方活動</button>
+                <button onclick="logout()">登出</button>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('events')">官方活動</button>
+            <button class="tab-btn" onclick="switchTab('meetups')">房客揪團</button>
+            <button class="tab-btn" onclick="switchTab('wishes')">許願牆</button>
+        </div>
+
+        <!-- Tab 1: 官方活動 -->
+        <div id="events" class="tab-content active">
+            <h2>東二行事曆</h2>
+            <div id="events-list"></div>
+        </div>
+
+        <!-- Tab 2: 房客揪團 -->
+        <div id="meetups" class="tab-content">
+            <h2>發起自主小聚</h2>
+            <div class="form-group">
+                <input type="text" id="meetup-title" placeholder="揪團主題 (例：今晚鐵花村聽歌)">
+                <input type="text" id="meetup-time" placeholder="時間 (例：今晚 20:00)">
+                <button onclick="addMeetup()">發佈揪團</button>
+            </div>
+            <div id="meetups-list"></div>
+        </div>
+
+        <!-- Tab 3: 許願牆 -->
+        <div id="wishes" class="tab-content">
+            <h2>東二許願牆</h2>
+            <div class="form-group">
+                <textarea id="wish-text" rows="3" placeholder="想辦什麼活動？或希望東二添購什麼設備？"></textarea>
+                <button onclick="addWish()">送出願望</button>
+            </div>
+            <div id="wishes-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUser = "";
+    let isAdmin = false;
+    let tempUser = "";
+    
+    let registeredUsers = ["東二主理人", "設計師 Ken", "行銷小安", "工程師 Amy"]; 
+    
+    let data = {
+        events: [
+            { id: 1, title: "東二主題之夜：數位遊牧經驗談", date: "本週五 19:30", joined: ["東二主理人"] },
+            { id: 2, title: "在地秘境導覽包車行", date: "下週日 09:00", joined: [] }
+        ],
+        meetups: [
+            { id: 1, host: "設計師 Ken", title: "晚餐一起吃在地小吃？", date: "今晚 18:30", joined: ["工程師 Amy"] }
+        ],
+        wishes: [
+            { id: 101, host: "行銷小安", text: "希望可以辦一場東海岸衝浪體驗！" },
+            { id: 102, host: "設計師 Ken", text: "有人想一起準備晚餐嗎？" }
+        ]
+    };
+
+    const ADMIN_PASSWORD = "admin123"; // 你的專屬管理員密碼，可自行修改
+
+    window.onload = function() {
+        const savedUser = localStorage.getItem('e2_current_user');
+        const savedIsAdmin = localStorage.getItem('e2_is_admin') === 'true';
+        if (savedUser) {
+            currentUser = savedUser;
+            isAdmin = savedIsAdmin;
+            if (!registeredUsers.includes(currentUser) && !isAdmin) {
+                registeredUsers.push(currentUser);
+            }
+            enterApp();
+        }
+    };
+
+    function checkNickname() {
+        const input = document.getElementById('nickname-input').value.trim();
+        if (input === "") {
+            alert("請輸入暱稱或密碼！");
+            return;
+        }
+        
+        // 檢查是否輸入管理員密碼
+        if (input === ADMIN_PASSWORD) {
+            currentUser = "東二營運經理";
+            isAdmin = true;
+            localStorage.setItem('e2_is_admin', 'true');
+            proceedLogin();
+            return;
+        }
+
+        isAdmin = false;
+        localStorage.setItem('e2_is_admin', 'false');
+        tempUser = input;
+
+        if (registeredUsers.includes(tempUser)) {
+            document.getElementById('login-step-1').style.display = 'none';
+            document.getElementById('login-step-2').style.display = 'flex';
+            document.getElementById('conflict-name').innerText = tempUser;
+        } else {
+            registeredUsers.push(tempUser);
+            proceedLogin();
+        }
+    }
+
+    function backToRename() {
+        tempUser = "";
+        document.getElementById('nickname-input').value = "";
+        document.getElementById('login-step-2').style.display = 'none';
+        document.getElementById('login-step-1').style.display = 'flex';
+    }
+
+    function proceedLogin() {
+        if (!isAdmin) {
+            currentUser = tempUser;
+        }
+        localStorage.setItem('e2_current_user', currentUser);
+        enterApp();
+    }
+
+    function enterApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('user-display').innerText = currentUser;
+        
+        if (isAdmin) {
+            document.getElementById('admin-badge').style.display = 'inline';
+            document.getElementById('admin-post-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('admin-badge').style.display = 'none';
+            document.getElementById('admin-post-btn').style.display = 'none';
+        }
+        renderAll();
+    }
+
+    function logout() {
+        if (confirm("確定要登出嗎？")) {
+            localStorage.removeItem('e2_current_user');
+            localStorage.removeItem('e2_is_admin');
+            currentUser = "";
+            isAdmin = false;
+            tempUser = "";
+            document.getElementById('nickname-input').value = "";
+            document.getElementById('login-step-1').style.display = 'flex';
+            document.getElementById('login-step-2').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function renderAll() {
+        renderEvents();
+        renderMeetups();
+        renderWishes();
+    }
+
+    // --- 官方活動渲染 (管理員可編輯/刪除) ---
+    function renderEvents() {
+        const container = document.getElementById('events-list');
+        container.innerHTML = data.events.map(ev => {
+            const isJoined = ev.joined.includes(currentUser);
+            const adminControls = isAdmin ? `
+                <div class="action-buttons">
+                    <button class="action-btn edit-btn" onclick="editEvent(${ev.id})">編輯活動</button>
+                    <button class="action-btn delete-btn" onclick="deleteEvent(${ev.id})">刪除活動</button>
+                </div>
+            ` : '';
+
+            return `
+            <div class="card">
+                <h3>${ev.title}</h3>
+                <p>📍 時間：${ev.date}</p>
+                <button class="${isJoined ? 'joined-btn' : ''}" onclick="joinAction('events', ${ev.id})">
+                    ${isJoined ? '取消報名' : '我要 +1'}
+                </button>
+                ${adminControls}
+                <div class="joined-list">已參加：${ev.joined.join(', ') || '尚無人報名'}</div>
+            </div>
+        `}).join('');
+    }
+
+    // --- 揪團渲染 (發起人或管理員可編輯/刪除) ---
+    function renderMeetups() {
+        const container = document.getElementById('meetups-list');
+        container.innerHTML = data.meetups.map(m => {
+            const isJoined = m.joined.includes(currentUser);
+            const canManage = isAdmin || (m.host === currentUser);
+
+            const controls = canManage ? `
+                <div class="action-buttons">
+                    <button class="action-btn edit-btn" onclick="editMeetup(${m.id})">編輯</button>
+                    <button class="action-btn delete-btn" onclick="deleteMeetup(${m.id})">刪除</button>
+                </div>
+            ` : '';
+
+            return `
+            <div class="card">
+                <h3>${m.title}</h3>
+                <p>👤 發起人：${m.host}</p>
+                <p>📍 時間：${m.date}</p>
+                <button class="${isJoined ? 'joined-btn' : ''}" onclick="joinAction('meetups', ${m.id})">
+                    ${isJoined ? '取消加入' : '我要 +1'}
+                </button>
+                ${controls}
+                <div class="joined-list">已加入：${m.joined.join(', ') || '等待夥伴中...'}</div>
+            </div>
+        `}).reverse().join('');
+    }
+
+    // --- 許願牆渲染 (管理員可刪除不當留言) ---
+    function renderWishes() {
+        const container = document.getElementById('wishes-list');
+        container.innerHTML = data.wishes.map(w => {
+            const adminDelete = isAdmin ? `
+                <button class="action-btn delete-btn" style="margin-top:5px; width:auto; padding:2px 8px; font-size:10px;" onclick="deleteWish(${w.id})">刪除此願望</button>
+            ` : '';
+
+            return `
+            <div class="card">
+                <p><strong>${w.host}：</strong> ${w.text}</p>
+                ${adminDelete}
+            </div>
+        `}).reverse().join('');
+    }
+
+    function joinAction(type, id) {
+        const item = data[type].find(i => i.id === id);
+        if (item) {
+            const userIndex = item.joined.indexOf(currentUser);
+            if (userIndex > -1) {
+                item.joined.splice(userIndex, 1); 
+            } else {
+                item.joined.push(currentUser); 
+            }
+            renderAll();
+        }
+    }
+
+    // --- 管理員專屬功能：發布官方活動 ---
+    function showAdminPostModal() {
+        const title = prompt("輸入官方活動名稱：");
+        if (!title) return;
+        const date = prompt("輸入活動時間 (例：本週五 19:30)：");
+        if (!date) return;
+
+        data.events.push({
+            id: Date.now(),
+            title: title.trim(),
+            date: date.trim(),
+            joined: ["東二主理人"]
+        });
+        renderEvents();
+    }
+
+    function editEvent(id) {
+        const item = data.events.find(i => i.id === id);
+        if (!item) return;
+        const newTitle = prompt("修改活動名稱：", item.title);
+        if (newTitle === null) return;
+        const newDate = prompt("修改活動時間：", item.date);
+        if (newDate === null) return;
+
+        item.title = newTitle.trim();
+        item.date = newDate.trim();
+        renderEvents();
+    }
+
+    function deleteEvent(id) {
+        if (confirm("確定刪除此官方活動？")) {
+            data.events = data.events.filter(i => i.id !== id);
+            renderEvents();
+        }
+    }
+
+    function addMeetup() {
+        const title = document.getElementById('meetup-title').value.trim();
+        const time = document.getElementById('meetup-time').value.trim();
+        if (!title || !time) {
+            alert("請填寫完整的揪團主題與時間。");
+            return;
+        }
+
+        data.meetups.push({
+            id: Date.now(),
+            host: currentUser,
+            title: title,
+            date: time,
+            joined: [currentUser]
+        });
+
+        document.getElementById('meetup-title').value = '';
+        document.getElementById('meetup-time').value = '';
+        renderMeetups();
+    }
+
+    function editMeetup(id) {
+        const item = data.meetups.find(i => i.id === id);
+        if (!item) return;
+        const newTitle = prompt("修改揪團主題：", item.title);
+        if (newTitle === null) return;
+        const newTime = prompt("修改時間：", item.date);
+        if (newTime === null) return;
+
+        item.title = newTitle.trim();
+        item.date = newTime.trim();
+        renderMeetups();
+    }
+
+    function deleteMeetup(id) {
+        if (confirm("確定要刪除這個揪團嗎？")) {
+            data.meetups = data.meetups.filter(i => i.id !== id);
+            renderMeetups();
+        }
+    }
+
+    function addWish() {
+        const text = document.getElementById('wish-text').value.trim();
+        if (!text) {
+            alert("請填寫你的願望內容。");
+            return;
+        }
+
+        data.wishes.push({
+            id: Date.now(),
+            host: currentUser,
+            text: text
+        });
+
+        document.getElementById('wish-text').value = '';
+        renderWishes();
+    }
+
+    function deleteWish(id) {
+        if (confirm("確定刪除此許願留言？")) {
+            data.wishes = data.wishes.filter(i => i.id !== id);
+            renderWishes();
+        }
+    }
+</script>
+
+</body>
+</html>
