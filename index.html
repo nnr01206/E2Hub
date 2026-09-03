@@ -27,10 +27,25 @@
 
         #app-container {
             width: 100%;
-            max-width: 500px; 
+            max-width: 430px; 
             min-height: 100vh;
             background: var(--bg-color);
             position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            body {
+                background-color: #e9e5d8;
+                align-items: center;
+                padding: 20px 0;
+            }
+            #app-container {
+                border-radius: 24px;
+                overflow: hidden;
+                min-height: 850px;
+                max-height: 90vh;
+            }
         }
 
         #login-screen {
@@ -59,10 +74,10 @@
             width: 100%;
             box-sizing: border-box;
             padding: 12px;
-            margin: 10px 0;
+            margin: 8px 0;
             border: 2px solid var(--secondary-color);
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
             font-family: inherit;
         }
@@ -99,13 +114,15 @@
         #main-app {
             display: none;
             padding: 20px;
+            overflow-y: auto;
+            max-height: 85vh;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 2px solid var(--secondary-color);
             padding-bottom: 10px;
         }
@@ -129,7 +146,7 @@
         .nav-tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .tab-btn {
@@ -137,7 +154,7 @@
             padding: 10px;
             background-color: var(--secondary-color);
             color: var(--text-color);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .tab-btn.active {
@@ -162,12 +179,12 @@
         }
 
         .card h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             color: var(--primary-color);
         }
 
         .card p {
-            margin: 5px 0;
+            margin: 4px 0;
             font-size: 14px;
         }
 
@@ -175,7 +192,7 @@
             font-size: 12px;
             color: #666;
             margin-top: 10px;
-            padding-top: 10px;
+            padding-top: 8px;
             border-top: 1px dashed #eee;
         }
 
@@ -217,8 +234,8 @@
     <div id="login-screen">
         <div id="login-step-1">
             <h1>東二共生居</h1>
-            <p>歡迎回家！請輸入暱稱</p>
-            <input type="text" id="nickname-input" placeholder="輸入暱稱">
+            <p>歡迎回家！請輸入暱稱，或輸入管理員密碼解鎖</p>
+            <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼 (admin123)">
             <button onclick="checkNickname()">進入平台</button>
         </div>
         
@@ -257,7 +274,9 @@
             <h2>發起自主小聚</h2>
             <div class="form-group">
                 <input type="text" id="meetup-title" placeholder="揪團主題 (例：今晚鐵花村聽歌)">
+                <input type="text" id="meetup-location" placeholder="地點 (例：鐵花村音樂聚落)">
                 <input type="text" id="meetup-time" placeholder="時間 (例：今晚 20:00)">
+                <textarea id="meetup-desc" rows="2" placeholder="活動說明 (例：聽完順便去吃宵夜，隨意揪！)"></textarea>
                 <button onclick="addMeetup()">發佈揪團</button>
             </div>
             <div id="meetups-list"></div>
@@ -276,6 +295,9 @@
 </div>
 
 <script>
+    // ⚠️ 請將下方引號內的網址替換為你的 Google Apps Script 部署網頁應用程式 URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbwd6QQuLtERglNcvbSUHwBs1eGyWy5Pq-6sTOVYxJ_8KyGuasoVXQhsaPvxZogSeKhvoQ/exec";
+
     let currentUser = "";
     let isAdmin = false;
     let tempUser = "";
@@ -283,20 +305,12 @@
     let registeredUsers = ["東二主理人", "設計師 Ken", "行銷小安", "工程師 Amy"]; 
     
     let data = {
-        events: [
-            { id: 1, title: "東二主題之夜：數位遊牧經驗談", date: "本週五 19:30", joined: ["東二主理人"] },
-            { id: 2, title: "在地秘境導覽包車行", date: "下週日 09:00", joined: [] }
-        ],
-        meetups: [
-            { id: 1, host: "設計師 Ken", title: "晚餐一起吃在地小吃？", date: "今晚 18:30", joined: ["工程師 Amy"] }
-        ],
-        wishes: [
-            { id: 101, host: "行銷小安", text: "希望可以辦一場東海岸衝浪體驗！" },
-            { id: 102, host: "設計師 Ken", text: "有人想一起準備晚餐嗎？" }
-        ]
+        events: [],
+        meetups: [],
+        wishes: []
     };
 
-    const ADMIN_PASSWORD = "admin123"; // 你的專屬管理員密碼，可自行修改
+    const ADMIN_PASSWORD = "admin123";
 
     window.onload = function() {
         const savedUser = localStorage.getItem('e2_current_user');
@@ -311,6 +325,37 @@
         }
     };
 
+    // --- 從 Google 試算表同步資料 ---
+    async function fetchCloudData() {
+        try {
+            const [resE, resM, resW] = await Promise.all([
+                fetch(`${API_URL}?type=events`).then(r => r.json()),
+                fetch(`${API_URL}?type=meetups`).then(r => r.json()),
+                fetch(`${API_URL}?type=wishes`).then(r => r.json())
+            ]);
+            
+            data.events = Array.isArray(resE) ? resE : [];
+            data.meetups = Array.isArray(resM) ? resM : [];
+            data.wishes = Array.isArray(resW) ? resW : [];
+            renderAll();
+        } catch (err) {
+            console.error("同步雲端資料失敗", err);
+        }
+    }
+
+    // --- 寫入異動至 Google 試算表 ---
+    async function sendToCloud(payload) {
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            fetchCloudData(); // 重新抓取最新狀態
+        } catch (err) {
+            console.error("寫入雲端失敗", err);
+        }
+    }
+
     function checkNickname() {
         const input = document.getElementById('nickname-input').value.trim();
         if (input === "") {
@@ -318,7 +363,6 @@
             return;
         }
         
-        // 檢查是否輸入管理員密碼
         if (input === ADMIN_PASSWORD) {
             currentUser = "東二營運經理";
             isAdmin = true;
@@ -368,7 +412,9 @@
             document.getElementById('admin-badge').style.display = 'none';
             document.getElementById('admin-post-btn').style.display = 'none';
         }
-        renderAll();
+        
+        // 登入後立即抓取雲端資料
+        fetchCloudData();
     }
 
     function logout() {
@@ -399,11 +445,11 @@
         renderWishes();
     }
 
-    // --- 官方活動渲染 (管理員可編輯/刪除) ---
     function renderEvents() {
         const container = document.getElementById('events-list');
         container.innerHTML = data.events.map(ev => {
-            const isJoined = ev.joined.includes(currentUser);
+            const joinedArray = Array.isArray(ev.joined) ? ev.joined : [];
+            const isJoined = joinedArray.includes(currentUser);
             const adminControls = isAdmin ? `
                 <div class="action-buttons">
                     <button class="action-btn edit-btn" onclick="editEvent(${ev.id})">編輯活動</button>
@@ -414,21 +460,23 @@
             return `
             <div class="card">
                 <h3>${ev.title}</h3>
-                <p>📍 時間：${ev.date}</p>
-                <button class="${isJoined ? 'joined-btn' : ''}" onclick="joinAction('events', ${ev.id})">
+                <p>📍 地點：${ev.location || '東二共生居'}</p>
+                <p>🕒 時間：${ev.date}</p>
+                <p style="color:#555; margin-top:6px; font-size:13px;">📝 ${ev.desc || ''}</p>
+                <button class="${isJoined ? 'joined-btn' : ''}" style="margin-top:10px;" onclick="joinAction('events', ${ev.id})">
                     ${isJoined ? '取消報名' : '我要 +1'}
                 </button>
                 ${adminControls}
-                <div class="joined-list">已參加：${ev.joined.join(', ') || '尚無人報名'}</div>
+                <div class="joined-list">已參加：${joinedArray.join(', ') || '尚無人報名'}</div>
             </div>
         `}).join('');
     }
 
-    // --- 揪團渲染 (發起人或管理員可編輯/刪除) ---
     function renderMeetups() {
         const container = document.getElementById('meetups-list');
         container.innerHTML = data.meetups.map(m => {
-            const isJoined = m.joined.includes(currentUser);
+            const joinedArray = Array.isArray(m.joined) ? m.joined : [];
+            const isJoined = joinedArray.includes(currentUser);
             const canManage = isAdmin || (m.host === currentUser);
 
             const controls = canManage ? `
@@ -442,17 +490,18 @@
             <div class="card">
                 <h3>${m.title}</h3>
                 <p>👤 發起人：${m.host}</p>
-                <p>📍 時間：${m.date}</p>
-                <button class="${isJoined ? 'joined-btn' : ''}" onclick="joinAction('meetups', ${m.id})">
+                <p>📍 地點：${m.location}</p>
+                <p>🕒 時間：${m.time}</p>
+                <p style="color:#555; margin-top:6px; font-size:13px;">📝 ${m.desc}</p>
+                <button class="${isJoined ? 'joined-btn' : ''}" style="margin-top:10px;" onclick="joinAction('meetups', ${m.id})">
                     ${isJoined ? '取消加入' : '我要 +1'}
                 </button>
                 ${controls}
-                <div class="joined-list">已加入：${m.joined.join(', ') || '等待夥伴中...'}</div>
+                <div class="joined-list">已加入：${joinedArray.join(', ') || '等待夥伴中...'}</div>
             </div>
         `}).reverse().join('');
     }
 
-    // --- 許願牆渲染 (管理員可刪除不當留言) ---
     function renderWishes() {
         const container = document.getElementById('wishes-list');
         container.innerHTML = data.wishes.map(w => {
@@ -469,8 +518,9 @@
     }
 
     function joinAction(type, id) {
-        const item = data[type].find(i => i.id === id);
+        const item = data[type].find(i => i.id == id);
         if (item) {
+            if (!Array.isArray(item.joined)) item.joined = [];
             const userIndex = item.joined.indexOf(currentUser);
             if (userIndex > -1) {
                 item.joined.splice(userIndex, 1); 
@@ -478,83 +528,131 @@
                 item.joined.push(currentUser); 
             }
             renderAll();
+            sendToCloud({
+                type: type,
+                action: 'join',
+                id: id,
+                joined: item.joined
+            });
         }
     }
 
-    // --- 管理員專屬功能：發布官方活動 ---
     function showAdminPostModal() {
         const title = prompt("輸入官方活動名稱：");
         if (!title) return;
+        const location = prompt("輸入活動地點：", "東二共生居");
+        if (location === null) return;
         const date = prompt("輸入活動時間 (例：本週五 19:30)：");
         if (!date) return;
+        const desc = prompt("輸入活動說明：");
+        if (desc === null) return;
 
-        data.events.push({
-            id: Date.now(),
+        const newId = Date.now();
+        sendToCloud({
+            type: 'events',
+            action: 'add',
+            id: newId,
             title: title.trim(),
+            location: location.trim(),
             date: date.trim(),
+            desc: desc.trim(),
             joined: ["東二主理人"]
         });
-        renderEvents();
     }
 
     function editEvent(id) {
-        const item = data.events.find(i => i.id === id);
+        const item = data.events.find(i => i.id == id);
         if (!item) return;
         const newTitle = prompt("修改活動名稱：", item.title);
         if (newTitle === null) return;
-        const newDate = prompt("修改活動時間：", item.date);
+        const newLoc = prompt("修改地點：", item.location);
+        if (newLoc === null) return;
+        const newDate = prompt("修改時間：", item.date);
         if (newDate === null) return;
+        const newDesc = prompt("修改說明：", item.desc);
+        if (newDesc === null) return;
 
-        item.title = newTitle.trim();
-        item.date = newDate.trim();
-        renderEvents();
+        sendToCloud({
+            type: 'events',
+            action: 'update',
+            id: id,
+            title: newTitle.trim(),
+            location: newLoc.trim(),
+            date: newDate.trim(),
+            desc: newDesc.trim()
+        });
     }
 
     function deleteEvent(id) {
         if (confirm("確定刪除此官方活動？")) {
-            data.events = data.events.filter(i => i.id !== id);
-            renderEvents();
+            sendToCloud({
+                type: 'events',
+                action: 'delete',
+                id: id
+            });
         }
     }
 
     function addMeetup() {
         const title = document.getElementById('meetup-title').value.trim();
+        const location = document.getElementById('meetup-location').value.trim();
         const time = document.getElementById('meetup-time').value.trim();
-        if (!title || !time) {
-            alert("請填寫完整的揪團主題與時間。");
+        const desc = document.getElementById('meetup-desc').value.trim();
+        
+        if (!title || !location || !time) {
+            alert("請填寫完整的揪團主題、地點與時間。");
             return;
         }
 
-        data.meetups.push({
-            id: Date.now(),
+        const newId = Date.now();
+        sendToCloud({
+            type: 'meetups',
+            action: 'add',
+            id: newId,
             host: currentUser,
             title: title,
-            date: time,
+            location: location,
+            time: time,
+            desc: desc || "快來一起參與吧！",
             joined: [currentUser]
         });
 
         document.getElementById('meetup-title').value = '';
+        document.getElementById('meetup-location').value = '';
         document.getElementById('meetup-time').value = '';
-        renderMeetups();
+        document.getElementById('meetup-desc').value = '';
     }
 
     function editMeetup(id) {
-        const item = data.meetups.find(i => i.id === id);
+        const item = data.meetups.find(i => i.id == id);
         if (!item) return;
         const newTitle = prompt("修改揪團主題：", item.title);
         if (newTitle === null) return;
-        const newTime = prompt("修改時間：", item.date);
+        const newLoc = prompt("修改地點：", item.location);
+        if (newLoc === null) return;
+        const newTime = prompt("修改時間：", item.time);
         if (newTime === null) return;
+        const newDesc = prompt("修改說明：", item.desc);
+        if (newDesc === null) return;
 
-        item.title = newTitle.trim();
-        item.date = newTime.trim();
-        renderMeetups();
+        sendToCloud({
+            type: 'meetups',
+            action: 'update',
+            id: id,
+            title: newTitle.trim(),
+            location: newLoc.trim(),
+            time: newTime.trim(),
+            desc: newDesc.trim()
+        });
     }
 
     function deleteMeetup(id) {
         if (confirm("確定要刪除這個揪團嗎？")) {
-            data.meetups = data.meetups.filter(i => i.id !== id);
-            renderMeetups();
+            sendToCloud({
+                type: 'meetups',
+                action: 'delete',
+                id: id
+            });
         }
     }
 
@@ -565,20 +663,25 @@
             return;
         }
 
-        data.wishes.push({
-            id: Date.now(),
+        const newId = Date.now();
+        sendToCloud({
+            type: 'wishes',
+            action: 'add',
+            id: newId,
             host: currentUser,
             text: text
         });
 
         document.getElementById('wish-text').value = '';
-        renderWishes();
     }
 
     function deleteWish(id) {
         if (confirm("確定刪除此許願留言？")) {
-            data.wishes = data.wishes.filter(i => i.id !== id);
-            renderWishes();
+            sendToCloud({
+                type: 'wishes',
+                action: 'delete',
+                id: id
+            });
         }
     }
 </script>
