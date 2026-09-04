@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>東二共生居 - 數位許願中心</title>
     <!-- 網頁預覽說明 (OG Meta Tags) -->
@@ -9,22 +9,21 @@
     <meta property="og:title" content="東二共生居 - 數位許願中心">
     <meta property="og:description" content="東二住客專屬的數位許願中心與協作 Hub。在這裡發起在地小聚、規劃官方活動、許下你對東二與台東生活的工作與生活想像。">
     <meta property="og:type" content="website">
-    <title>東二共生居 - 房客專屬 Hub</title>
     <style>
         :root {
-            --primary-color: #d4a373; 
-            --secondary-color: #faedcd;
-            --text-color: #333;
-            --bg-color: #fefae0;
+            --primary-orange: #e8633c; /* 萃取自 Logo 的橘紅色 */
+            --accent-yellow: #f4c456;  /* 萃取自 Logo 的暖黃色 */
+            --dark-brown: #9e3f23;     /* 沉穩品牌文字色 */
+            --bg-color: #fdfbf7;       /* 溫潤柔和底色 */
             --card-bg: #ffffff;
             --cancel-color: #999999;
-            --admin-color: #b05753;
+            --secondary-color: #faedcd;
         }
 
         body {
             font-family: 'Helvetica Neue', Arial, 'LiHei Pro', sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--dark-brown);
             margin: 0;
             padding: 0;
             display: flex;
@@ -37,7 +36,7 @@
             min-height: 100vh;
             background: var(--bg-color);
             position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
         }
 
         @media (min-width: 768px) {
@@ -54,14 +53,16 @@
             }
         }
 
+        /* 登入畫面 */
         #login-screen {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
+            box-sizing: border-box;
         }
 
         #login-step-1, #login-step-2 {
@@ -71,9 +72,26 @@
             align-items: center;
         }
 
+        /* Logo 樣式調整 */
+        .brand-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06));
+        }
+
         #login-screen h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
+            color: var(--dark-brown);
+            font-size: 22px;
+            margin: 0 0 4px 0;
+            letter-spacing: 1px;
+        }
+
+        #login-screen p {
+            color: #777;
+            font-size: 14px;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.5px;
         }
 
         input[type="text"], textarea {
@@ -89,11 +107,11 @@
         }
 
         input[type="text"]:focus, textarea:focus {
-            border-color: var(--primary-color);
+            border-color: var(--primary-orange);
         }
 
         button {
-            background-color: var(--primary-color);
+            background-color: var(--primary-orange);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -106,17 +124,14 @@
         }
 
         button:hover {
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         button.joined-btn {
             background-color: var(--cancel-color);
         }
 
-        button.admin-btn {
-            background-color: var(--admin-color);
-        }
-
+        /* 主應用畫面 */
         #main-app {
             display: none;
             padding: 20px;
@@ -146,7 +161,7 @@
         }
 
         .header button.admin-tag {
-            background: var(--admin-color);
+            background: var(--primary-orange);
         }
 
         .nav-tabs {
@@ -159,12 +174,13 @@
             flex: 1;
             padding: 10px;
             background-color: var(--secondary-color);
-            color: var(--text-color);
+            color: var(--dark-brown);
             font-size: 13px;
+            border-radius: 8px;
         }
 
         .tab-btn.active {
-            background-color: var(--primary-color);
+            background-color: var(--primary-orange);
             color: white;
         }
 
@@ -180,13 +196,14 @@
             background: var(--card-bg);
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
             margin-bottom: 15px;
+            border-left: 4px solid var(--accent-yellow);
         }
 
         .card h3 {
             margin: 0 0 8px 0;
-            color: var(--primary-color);
+            color: var(--primary-orange);
         }
 
         .card p {
@@ -207,7 +224,7 @@
             background: white;
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
 
         .action-buttons {
@@ -236,16 +253,19 @@
 <body>
 
 <div id="app-container">
-    <!-- 1. 登入區 -->
+    <!-- 1. 登入區 (已加入 Logo 與品牌識別色彩) -->
     <div id="login-screen">
         <div id="login-step-1">
+            <!-- 替換為你在 GitHub 專案中的 Logo 圖片路徑或線上圖床網址 -->
+            <img src="https://raw.githubusercontent.com/你的GitHub帳號/你的專案名稱/main/logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/120x120/e8633c/ffffff?text=E2+LOGO'">
             <h1>東二共生居</h1>
-            <p>是誰回家了？</p>
-            <input type="text" id="nickname-input" placeholder="請輸入暱稱">
+            <p>數位許願中心</p>
+            <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼">
             <button onclick="checkNickname()">進入平台</button>
         </div>
         
         <div id="login-step-2" style="display: none;">
+            <img src="https://raw.githubusercontent.com/你的GitHub帳號/你的專案名稱/main/logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/120x120/e8633c/ffffff?text=E2+LOGO'">
             <h1>身分確認</h1>
             <p>發現已經有人使用「<strong id="conflict-name"></strong>」這個暱稱囉！</p>
             <button onclick="proceedLogin()">是我本人，繼續進入</button>
@@ -256,7 +276,7 @@
     <!-- 2. 主畫面 -->
     <div id="main-app">
         <div class="header">
-            <div>嗨，<strong id="user-display"></strong> <span id="admin-badge" style="display:none; color:var(--admin-color); font-size:12px; font-weight:bold;">[管理員]</span></div>
+            <div>嗨，<strong id="user-display"></strong> <span id="admin-badge" style="display:none; color:var(--primary-orange); font-size:12px; font-weight:bold;">[管理員]</span></div>
             <div class="btn-group">
                 <button id="admin-post-btn" class="admin-tag" style="display:none;" onclick="showAdminPostModal()">發布官方活動</button>
                 <button onclick="logout()">登出</button>
@@ -301,7 +321,6 @@
 </div>
 
 <script>
-    // ⚠️ 請將下方引號內的網址替換為你的 Google Apps Script 部署網頁應用程式 URL
     const API_URL = "https://script.google.com/macros/s/AKfycbwd6QQuLtERglNcvbSUHwBs1eGyWy5Pq-6sTOVYxJ_8KyGuasoVXQhsaPvxZogSeKhvoQ/exec";
 
     let currentUser = "";
@@ -320,7 +339,7 @@
 
     window.onload = function() {
         const savedUser = localStorage.getItem('e2_current_user');
-        const savedIsAdmin = localStorage.getItem('e2_is_admin') === 'true';
+        const savedIsAdmin = localStorage.getItem('e2_is_admin'] === 'true';
         if (savedUser) {
             currentUser = savedUser;
             isAdmin = savedIsAdmin;
@@ -331,7 +350,6 @@
         }
     };
 
-    // --- 從 Google 試算表同步資料 ---
     async function fetchCloudData() {
         try {
             const [resE, resM, resW] = await Promise.all([
@@ -349,14 +367,13 @@
         }
     }
 
-    // --- 寫入異動至 Google 試算表 ---
     async function sendToCloud(payload) {
         try {
             await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
-            fetchCloudData(); // 重新抓取最新狀態
+            fetchCloudData();
         } catch (err) {
             console.error("寫入雲端失敗", err);
         }
@@ -419,7 +436,6 @@
             document.getElementById('admin-post-btn').style.display = 'none';
         }
         
-        // 登入後立即抓取雲端資料
         fetchCloudData();
     }
 
