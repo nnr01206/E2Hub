@@ -24,7 +24,7 @@
             font-family: 'Helvetica Neue', Arial, 'LiHei Pro', sans-serif;
             background-color: var(--bg-color);
             color: var(--dark-brown);
-            margin: 0;
+            : 0;
             padding: 0;
             display: flex;
             justify-content: center;
@@ -74,7 +74,7 @@
 
         /* 放大後的  樣式 */
         .brand-logo {
-            width: 360px; 
+            width: 420px; 
             height: auto;
             margin-bottom: 16px;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
@@ -257,8 +257,6 @@
     <div id="login-screen">
         <div id="login-step-1">
             <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
-            <h1>東二共生居</h1>
-            <p>數位許願中心</p>
             <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼">
             <button onclick="checkNickname()">進入平台</button>
         </div>
