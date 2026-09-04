@@ -72,12 +72,12 @@
             align-items: center;
         }
 
-        /* Logo 樣式調整 */
+        /* 放大後的 Logo 樣式 */
         .brand-logo {
-            width: 120px;
+            width: 180px; 
             height: auto;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06));
+            margin-bottom: 16px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
         }
 
         #login-screen h1 {
@@ -253,10 +253,10 @@
 <body>
 
 <div id="app-container">
-    <!-- 1. 登入區 (已加入 Logo 與品牌識別色彩) -->
+    <!-- 1. 登入區 -->
     <div id="login-screen">
         <div id="login-step-1">
-            <img src="https://raw.githubusercontent.com/nnr01206/E2hub/main/e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/120x120/e8633c/ffffff?text=E2+LOGO'">
+            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
             <h1>東二共生居</h1>
             <p>數位許願中心</p>
             <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼">
@@ -264,7 +264,7 @@
         </div>
         
         <div id="login-step-2" style="display: none;">
-            <img src="https://raw.githubusercontent.com/nnr01206/E2hub/main/e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/120x120/e8633c/ffffff?text=E2+LOGO'">
+            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
             <h1>身分確認</h1>
             <p>發現已經有人使用「<strong id="conflict-name"></strong>」這個暱稱囉！</p>
             <button onclick="proceedLogin()">是我本人，繼續進入</button>
@@ -338,7 +338,7 @@
 
     window.onload = function() {
         const savedUser = localStorage.getItem('e2_current_user');
-        const savedIsAdmin = localStorage.getItem('e2_is_admin'] === 'true';
+        const savedIsAdmin = localStorage.getItem('e2_is_admin') === 'true';
         if (savedUser) {
             currentUser = savedUser;
             isAdmin = savedIsAdmin;
