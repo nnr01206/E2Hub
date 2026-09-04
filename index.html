@@ -11,10 +11,10 @@
     <meta property="og:type" content="website">
     <style>
         :root {
-            --primary-orange: #e8633c; /* 萃取自 Logo 的橘紅色 */
-            --accent-yellow: #f4c456;  /* 萃取自 Logo 的暖黃色 */
-            --dark-brown: #9e3f23;     /* 沉穩品牌文字色 */
-            --bg-color: #fdfbf7;       /* 溫潤柔和底色 */
+            --primary-orange: #e8633c; /* 橘紅色 */
+            --accent-yellow: #f4c456;  /* 暖黃色 */
+            --dark-brown: #9e3f23;     /* 文字色 */
+            --bg-color: #fdfbf7;       /* 底色 */
             --card-bg: #ffffff;
             --cancel-color: #999999;
             --secondary-color: #faedcd;
@@ -72,7 +72,7 @@
             align-items: center;
         }
 
-        /* 放大後的  樣式 */
+        /* 首頁logo樣式 */
         .brand-logo {
             width: 420px; 
             height: auto;
@@ -257,7 +257,8 @@
     <div id="login-screen">
         <div id="login-step-1">
             <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
-            <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼">
+             <h1>是誰回家了～</h1>
+            <input type="text" id="nickname-input" placeholder="輸入暱稱">
             <button onclick="checkNickname()">進入平台</button>
         </div>
         
