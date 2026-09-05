@@ -11,10 +11,10 @@
     <meta property="og:type" content="website">
     <style>
         :root {
-            --primary-orange: #e8633c; /* 橘紅色 */
-            --accent-yellow: #f4c456;  /* 暖黃色 */
-            --dark-brown: #9e3f23;     /* 文字色 */
-            --bg-color: #fdfbf7;       /* 底色 */
+            --primary-orange: #e8633c; /* 萃取自 Logo 的橘紅色 */
+            --accent-yellow: #f4c456;  /* 萃取自 Logo 的暖黃色 */
+            --dark-brown: #9e3f23;     /* 沉穩品牌文字色 */
+            --bg-color: #fdfbf7;       /* 溫潤柔和底色 */
             --card-bg: #ffffff;
             --cancel-color: #999999;
             --secondary-color: #faedcd;
@@ -24,7 +24,7 @@
             font-family: 'Helvetica Neue', Arial, 'LiHei Pro', sans-serif;
             background-color: var(--bg-color);
             color: var(--dark-brown);
-            : 0;
+            margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
@@ -72,9 +72,9 @@
             align-items: center;
         }
 
-        /* 首頁logo樣式 */
+        /* 放大後的 Logo 樣式 */
         .brand-logo {
-            width: 420px; 
+            width: 180px; 
             height: auto;
             margin-bottom: 16px;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
@@ -256,14 +256,15 @@
     <!-- 1. 登入區 -->
     <div id="login-screen">
         <div id="login-step-1">
-            <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
-             <h1>是誰回家了～</h1>
-            <input type="text" id="nickname-input" placeholder="輸入暱稱">
+            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
+            <h1>東二共生居</h1>
+            <p>數位許願中心</p>
+            <input type="text" id="nickname-input" placeholder="輸入暱稱或管理員密碼">
             <button onclick="checkNickname()">進入平台</button>
         </div>
         
         <div id="login-step-2" style="display: none;">
-            <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
+            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
             <h1>身分確認</h1>
             <p>發現已經有人使用「<strong id="conflict-name"></strong>」這個暱稱囉！</p>
             <button onclick="proceedLogin()">是我本人，繼續進入</button>
@@ -568,15 +569,23 @@
         if (desc === null) return;
 
         const newId = Date.now();
-        sendToCloud({
-            type: 'events',
-            action: 'add',
+        const newEvent = {
             id: newId,
             title: title.trim(),
             location: location.trim(),
             date: date.trim(),
             desc: desc.trim(),
             joined: ["東二主理人"]
+        };
+
+        // 🚀 0秒極速渲染
+        data.events.push(newEvent);
+        renderEvents();
+
+        sendToCloud({
+            type: 'events',
+            action: 'add',
+            ...newEvent
         });
     }
 
@@ -625,9 +634,7 @@
         }
 
         const newId = Date.now();
-        sendToCloud({
-            type: 'meetups',
-            action: 'add',
+        const newItem = {
             id: newId,
             host: currentUser,
             title: title,
@@ -635,12 +642,22 @@
             time: time,
             desc: desc || "快來一起參與吧！",
             joined: [currentUser]
-        });
+        };
+
+        // 🚀 0秒極速渲染
+        data.meetups.push(newItem);
+        renderMeetups();
 
         document.getElementById('meetup-title').value = '';
         document.getElementById('meetup-location').value = '';
         document.getElementById('meetup-time').value = '';
         document.getElementById('meetup-desc').value = '';
+
+        sendToCloud({
+            type: 'meetups',
+            action: 'add',
+            ...newItem
+        });
     }
 
     function editMeetup(id) {
@@ -684,24 +701,33 @@
         }
 
         const newId = Date.now();
-        sendToCloud({
-            type: 'wishes',
-            action: 'add',
+        const newWish = {
             id: newId,
             host: currentUser,
             text: text
-        });
+        };
+
+        // 🚀 0秒極速渲染
+        data.wishes.push(newWish);
+        renderWishes();
 
         document.getElementById('wish-text').value = '';
+
+        sendToCloud({
+            type: 'wishes',
+            action: 'add',
+            ...newWish
+        });
     }
 
     function deleteWish(id) {
         if (confirm("確定刪除此許願留言？")) {
-            sendToCloud({
+            sendTo_cloud_del = {
                 type: 'wishes',
                 action: 'delete',
                 id: id
-            });
+            };
+            sendToCloud(sendTo_cloud_del);
         }
     }
 </script>
