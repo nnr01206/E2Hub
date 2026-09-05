@@ -72,7 +72,7 @@
             align-items: center;
         }
 
-        /* 首頁logo樣式（完全保留你原本的設定） */
+        /* 首頁logo樣式（維持你設定的 420px） */
         .brand-logo {
             width: 420px; 
             height: auto;
@@ -337,12 +337,10 @@
 
     window.onload = function() {
         const savedUser = localStorage.getItem('e2_current_user');
-        const savedIsAdmin = localStorage.getItem('e2_is_admin'] === 'true'; // 保留你的邏輯
-        // 修正原先括號防呆：
-        const savedIsAdminChecked = localStorage.getItem('e2_is_admin') === 'true';
+        const savedIsAdmin = localStorage.getItem('e2_is_admin') === 'true';
         if (savedUser) {
             currentUser = savedUser;
-            isAdmin = savedIsAdminChecked;
+            isAdmin = savedIsAdmin;
             if (!registeredUsers.includes(currentUser) && !isAdmin) {
                 registeredUsers.push(currentUser);
             }
@@ -722,7 +720,7 @@
     }
 
     function deleteWish(id) {
-        if (confirm("確定刪除此許願留言？")) {
+        if (confirm("確定刪除此願望留言？")) {
             sendToCloud({
                 type: 'wishes',
                 action: 'delete',
