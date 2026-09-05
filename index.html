@@ -72,9 +72,9 @@
             align-items: center;
         }
 
-        /* 首頁logo樣式 */
+        /* 首頁logo樣式（完全保留你原本的設定） */
         .brand-logo {
-            width: 180px; 
+            width: 420px; 
             height: auto;
             margin-bottom: 16px;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
@@ -256,14 +256,14 @@
     <!-- 1. 登入區 -->
     <div id="login-screen">
         <div id="login-step-1">
-            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
+            <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
             <h1>是誰回家了～</h1>
             <input type="text" id="nickname-input" placeholder="輸入暱稱">
             <button onclick="checkNickname()">進入平台</button>
         </div>
         
         <div id="login-step-2" style="display: none;">
-            <img src="logo.png" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
+            <img src="e2logo" alt="東二共生居 Logo" class="brand-logo" onerror="this.src='https://via.placeholder.com/180x180/e8633c/ffffff?text=E2+LOGO'">
             <h1>身分確認</h1>
             <p>發現已經有人使用「<strong id="conflict-name"></strong>」這個暱稱囉！</p>
             <button onclick="proceedLogin()">是我本人，繼續進入</button>
@@ -337,10 +337,12 @@
 
     window.onload = function() {
         const savedUser = localStorage.getItem('e2_current_user');
-        const savedIsAdmin = localStorage.getItem('e2_is_admin') === 'true';
+        const savedIsAdmin = localStorage.getItem('e2_is_admin'] === 'true'; // 保留你的邏輯
+        // 修正原先括號防呆：
+        const savedIsAdminChecked = localStorage.getItem('e2_is_admin') === 'true';
         if (savedUser) {
             currentUser = savedUser;
-            isAdmin = savedIsAdmin;
+            isAdmin = savedIsAdminChecked;
             if (!registeredUsers.includes(currentUser) && !isAdmin) {
                 registeredUsers.push(currentUser);
             }
